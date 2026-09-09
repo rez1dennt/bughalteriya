@@ -1,0 +1,1 @@
+{"name":"sitnikov/accounting-site","description":"SMTP handler for accounting services website","type":"project","require":{"php":">=8.1","phpmailer/phpmailer":"^6.10 || ^7.0"},"config":{"sort-packages":true}}

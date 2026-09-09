@@ -1,0 +1,13 @@
+const {chromium,expect}=require('@playwright/test');const assert=require('node:assert/strict');
+(async()=>{const b=await chromium.launch({executablePath:process.env.CHROME_PATH||'C:/Users/bahti/AppData/Local/ms-playwright/chromium-1234/chrome-win64/chrome.exe'});try{
+const p=await b.newPage({viewport:{width:1440,height:900}});await p.goto('http://127.0.0.1:8080');await p.locator('[data-cookie-accept]').click();
+const card=p.locator('[data-service="0"]');await card.click();await p.locator('#service-request').click();await p.locator('#request-dialog [data-close]').click();await expect(p.locator('#request-dialog')).not.toBeVisible();await expect(card).toBeFocused();
+await p.locator('.header-actions [data-request]').click();await p.mouse.click(5,400);await expect(p.locator('#request-dialog')).not.toBeVisible();
+await p.setViewportSize({width:320,height:480});await p.locator('.menu-toggle').click();await p.keyboard.press('Escape');await expect(p.locator('#menu-dialog')).not.toBeVisible();
+await p.locator('#employees').fill('1000');await p.locator('#turnover').fill('100000000');assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+let captured=null;await p.route('**/api/contact.php',async route=>{if(route.request().method()==='GET')return route.fulfill({json:{token:'test',configured:true}});captured=route.request().postDataJSON();return route.fulfill({json:{ok:true}})});
+await p.locator('[data-calculator-request]').click();const f=p.locator('#request-dialog form');await f.locator('[name=phone]').fill('8 900 000 00 00');await f.locator('[name=consent]').check();await f.locator('[type=submit]').click();await expect(f.locator('.form-status')).toContainText('Заявка отправлена');assert.equal(captured.calculation.employees,1000);assert.equal(captured.calculation.turnover,100000000);assert.equal(captured.phone,'+79000000000');assert.equal(captured.consentVersion,'2026-09-09');await expect(f.locator('[name=phone]')).toHaveValue('');
+await p.keyboard.press('Escape');
+const nojs=await b.newContext({javaScriptEnabled:false,viewport:{width:390,height:800}});const np=await nojs.newPage();await np.goto('http://127.0.0.1:8080');await expect(np.locator('h1')).toContainText('Бухгалтерия');assert((await np.locator('#faq-answer-0').boundingBox()).height>20);assert(await np.locator('a[href="tel:+79067500600"]').count()>0);await nojs.close();
+console.log('Extended checks passed: nested focus, backdrop, close button, low viewport, maximum calculator counts, payload + simulated success, no-JS content/FAQ. No email sent.');
+}finally{await b.close()}})().catch(e=>{console.error(e);process.exit(1)});

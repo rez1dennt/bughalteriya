@@ -1,0 +1,17 @@
+const {chromium,expect}=require('@playwright/test');const assert=require('node:assert/strict');
+(async()=>{const b=await chromium.launch({executablePath:process.env.CHROME_PATH||'C:/Users/bahti/AppData/Local/ms-playwright/chromium-1234/chrome-win64/chrome.exe'});try{
+const p=await b.newPage({viewport:{width:390,height:800}});const errors=[];p.on('pageerror',e=>errors.push(e.message));await p.goto('http://127.0.0.1:8080');await p.locator('[data-cookie-accept]').click();const phone=p.locator('#contact-phone');
+await phone.pressSequentially('89067500600');await expect(phone).toHaveValue('+7 (906) 750-06-00');
+for(const pos of [7,8,9]){await phone.fill('+7 (906) 750-06-00');await phone.evaluate((e,pos)=>e.setSelectionRange(pos,pos),pos);await phone.press('Backspace');await expect(phone).toHaveValue('+7 (907) 500-60-0');assert.equal(await phone.evaluate(e=>e.selectionStart),6);await phone.press('6');await expect(phone).toHaveValue('+7 (906) 750-06-00')}
+await phone.fill('+7 (906) 750-06-00');await phone.evaluate(e=>e.setSelectionRange(7,7));await phone.press('Delete');await expect(phone).toHaveValue('+7 (906) 500-60-0');
+for(const pos of [12,13,15,16]){await phone.fill('+7 (906) 750-06-00');await phone.evaluate((e,pos)=>e.setSelectionRange(pos,pos),pos);await phone.press('Backspace');assert.equal((await phone.inputValue()).replace(/\D/g,'').length,10)}
+await phone.fill('+7 (906) 750-06-00');await phone.evaluate(e=>e.setSelectionRange(4,7));await phone.pressSequentially('999');await expect(phone).toHaveValue('+7 (999) 750-06-00');
+await phone.press('ControlOrMeta+A');await phone.press('Backspace');await expect(phone).toHaveValue('');
+for(const value of ['+7 (906) 750-06-00','8 906 750 06 00','9067500600']){await phone.fill(value);await expect(phone).toHaveValue('+7 (906) 750-06-00')}
+await p.context().grantPermissions(['clipboard-read','clipboard-write']);await p.evaluate(()=>navigator.clipboard.writeText('8 (906) 750-06-00'));await phone.press('ControlOrMeta+A');await phone.press('ControlOrMeta+V');await expect(phone).toHaveValue('+7 (906) 750-06-00');
+await phone.press('End');for(let i=0;i<12;i++)await phone.press('Backspace');await expect(phone).toHaveValue('');
+await phone.fill('123');await p.locator('#contact-consent').check();await p.locator('#consultation [type=submit]').click();await expect(p.locator('#contact-phone-error')).toContainText('Введите');
+await p.locator('.menu-toggle').click();await p.locator('#menu-dialog [data-request]').click();const modal=p.locator('#modal-phone');await modal.pressSequentially('79067500600');await expect(modal).toHaveValue('+7 (906) 750-06-00');
+let payload;await p.route('**/api/contact.php',r=>{if(r.request().method()==='GET')return r.fulfill({json:{token:'test',configured:true}});payload=r.request().postDataJSON();return r.fulfill({json:{ok:true}})});await p.locator('#modal-consent').check();await p.locator('#request-dialog [type=submit]').click();await expect(p.locator('#request-dialog .form-status')).toContainText('Заявка отправлена');assert.equal(payload.phone,'+79067500600');await expect(modal).toHaveValue('');await modal.pressSequentially('9067500600');await expect(modal).toHaveValue('+7 (906) 750-06-00');
+assert.deepEqual(errors,[]);console.log('Phone mask passed: typing 7/8, paste/fill, Backspace around brackets and separators, Delete, middle replacement, select-all clear, repeated deletion, validation, both forms, normalized payload and reset. SMTP simulated; no email sent.');
+}finally{await b.close()}})().catch(e=>{console.error(e);process.exit(1)});

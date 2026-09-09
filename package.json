@@ -1,0 +1,1 @@
+{"name":"sitnikov-accounting","version":"1.0.0","private":true,"description":"Статический сайт бухгалтерских услуг","scripts":{"test":"node --test tests/*.test.cjs","verify":"node --test tests/*.test.cjs && node tests/browser.cjs","prepare:site":"node tools/prepare-site.cjs"},"devDependencies":{"@playwright/test":"^1.58.0"}}

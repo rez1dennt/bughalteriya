@@ -1,0 +1,8 @@
+const {test}=require('node:test');const assert=require('node:assert/strict');const fs=require('node:fs');const vm=require('node:vm');
+const ctx={};vm.createContext(ctx);for(const f of ['config','pricing'])vm.runInContext(fs.readFileSync(`assets/js/${f}.js`,'utf8'),ctx);
+const fixture=JSON.parse(fs.readFileSync('docs/research/reference-prices.json','utf8'));
+const taxes={usnd:'income',usndr:'expense',osno:'general',ausn:'automated'};
+test('matches 2160 observed live reference cases including selected plan',()=>{assert.equal(typeof ctx.Pricing.quote,'function');for(const row of fixture.results){const quote=ctx.Pricing.quote({...row,tax:taxes[row.tax]});assert.equal(quote.price,row.price,JSON.stringify(row));assert.equal(quote.plan,row.plan,JSON.stringify(row))}});
+test('normalizes malformed input without NaN',()=>{const n=ctx.Pricing.normalize({employees:-3,turnover:'junk',business:'x',tax:'x',activities:['invalid']});assert.equal(n.employees,0);assert.equal(n.turnover,0);assert.equal(ctx.Pricing.quote(n).price,3500)});
+test('exact reference boundaries',()=>{const base={business:'ip',tax:'income',activities:['service'],employees:1};assert.equal(ctx.Pricing.quote({...base,turnover:200000}).price,7000);assert.equal(ctx.Pricing.quote({...base,turnover:200001}).price,9000);assert.equal(ctx.Pricing.quote({...base,employees:4,turnover:500001}).price,10001)});
+test('individual quote never exposes the reference placeholder as a price',()=>{const q=ctx.Pricing.quote({business:'ooo',tax:'automated',activities:['trade'],employees:0,turnover:0});assert.equal(q.price,null);assert.equal(q.plan,'upsTrade')});
