@@ -12,6 +12,22 @@ body{font-size:16px;line-height:1.6}h1,h2{font-weight:650;letter-spacing:-.035em
 .tariff-grid>*{min-width:0}
 @media(min-width:701px) and (max-width:1050px){.tariff-price{font-size:30px;white-space:normal;min-height:78px}.tariff-price small{display:block;font-size:14px;margin-top:3px}.tariff .check-list,.tariff-description{font-size:14px}.tariff .button{font-size:13px;padding:12px 16px}}
 dialog.closing{pointer-events:none}
+.menu-glyph{position:relative;display:block;width:22px;height:18px}
+.menu-line{position:absolute;left:0;top:2px;width:22px;height:2px;border-radius:2px;background:currentColor;transform-origin:center;transition:transform 360ms cubic-bezier(.22,1,.36,1),opacity 180ms ease}
+.menu-line:nth-child(2){top:8px}.menu-line:nth-child(3){top:14px}
+.menu-toggle[aria-expanded=true] .menu-line:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.menu-toggle[aria-expanded=true] .menu-line:nth-child(2){opacity:0;transform:scaleX(.2)}
+.menu-toggle[aria-expanded=true] .menu-line:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+.menu-toggle-slot{display:none;width:44px;height:44px;flex-shrink:0}
+#menu-dialog{inset:0;width:100%;max-width:none;height:100dvh;max-height:100dvh;padding:0;margin:0;border:0;border-radius:0;background:transparent;box-shadow:none;overflow:hidden}
+#menu-dialog[open],#menu-dialog.closing{animation:none;transform:none}
+/* The animated panel must not create a focus-scrollable outer viewport. */
+#menu-dialog{overflow:clip}
+.mobile-menu-panel{position:absolute;right:0;top:0;width:min(420px,100%);height:100dvh;background:var(--bg);padding:calc(80px + env(safe-area-inset-top)) 28px max(30px,env(safe-area-inset-bottom));overflow-y:auto;overscroll-behavior:contain;animation:menu-refined-in var(--menu-open) var(--menu-ease) both}
+#menu-dialog.closing .mobile-menu-panel{animation:menu-refined-out var(--menu-close) cubic-bezier(.4,0,.6,1) both}
+#menu-dialog>.menu-toggle{display:grid;position:fixed;margin:0;z-index:2}
+@media(max-width:1150px){.menu-toggle-slot{display:block}}
+@media(prefers-reduced-motion:reduce){.menu-line{transition:none}.mobile-menu-panel,#menu-dialog.closing .mobile-menu-panel{animation:none}}
 .hero .eyebrow{max-width:none;white-space:nowrap}
 .hero-buttons .button{text-align:center}
 @media(max-width:700px){.hero .eyebrow{font-size:clamp(8.5px,2.7vw,12px);letter-spacing:.055em}}
